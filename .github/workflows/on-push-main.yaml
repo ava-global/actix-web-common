@@ -72,3 +72,32 @@ jobs:
 
       - name: Run cargo clippy
         run: cargo clippy -- -D warnings
+
+  crate_io:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: cargo-bump
+
+      - name: cargo login
+        run: cargo login ${{ secrets.CARGO_LOGIN_TOKEN }}
+        
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v5.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: bump cargo version
+        run: cargo bump ${{ steps.tag_version.outputs.new_tag }}
+
+      - name: cargo publish
+        run: cargo publish --allow-dirty
