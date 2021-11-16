@@ -84,7 +84,9 @@ jobs:
         with:
           toolchain: stable
           override: true
-          components: cargo-bump
+      
+      - name: cargo login
+        run: cargo install cargo-bump
 
       - name: cargo login
         run: cargo login ${{ secrets.CARGO_LOGIN_TOKEN }}
