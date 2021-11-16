@@ -1,6 +1,6 @@
 [package]
 name = "avantis_actix_web_common"
-version = "0.1.2"
+version = "0.0.1"
 edition = "2021"
 description = "test"
 license = "Apache-2.0"

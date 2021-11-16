@@ -85,7 +85,7 @@ jobs:
           toolchain: stable
           override: true
       
-      - name: cargo login
+      - name: install cargo bump
         run: cargo install cargo-bump
 
       - name: cargo login
@@ -98,7 +98,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: bump cargo version
-        run: cargo bump ${{ steps.tag_version.outputs.new_tag }}
+        run: echo ${{ steps.tag_version.outputs.new_version }}
 
       - name: cargo publish
         run: cargo publish --allow-dirty
