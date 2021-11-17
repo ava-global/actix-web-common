@@ -1,7 +1,7 @@
 use actix_web::{
-    error::{self, Error, JsonPayloadError},
+    error::{Error, JsonPayloadError},
     http::StatusCode,
-    HttpRequest, ResponseError,
+    HttpRequest,
 };
 
 use crate::actix_web_error::{ActixWebError, ErrorInfo};
@@ -16,5 +16,5 @@ pub fn json_error_handler(err: JsonPayloadError, _req: &HttpRequest) -> Error {
         status_code: StatusCode::BAD_REQUEST,
     };
 
-    error::InternalError::from_response("", awe.error_response()).into()
+    awe.to_error()
 }
