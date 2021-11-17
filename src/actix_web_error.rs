@@ -14,6 +14,8 @@ pub struct ErrorInfo {
     pub action: Option<String>,
 }
 
+/// Common actix web error struct
+/// has 2 assoicated functions `new` and `to_error`
 #[derive(Debug)]
 pub struct ActixWebError {
     pub error_info: ErrorInfo,
@@ -21,6 +23,7 @@ pub struct ActixWebError {
 }
 
 impl ActixWebError {
+    /// use to construct common new ActixWebError
     pub fn new(message: String, status_code: StatusCode) -> Self {
         Self {
             error_info: ErrorInfo {
@@ -31,6 +34,7 @@ impl ActixWebError {
         }
     }
 
+    /// transform itself to actix error
     pub fn to_error(&self) -> actix_web::error::Error {
         actix_web::error::InternalError::from_response("", self.error_response()).into()
     }
@@ -47,6 +51,7 @@ impl actix_web::error::ResponseError for ActixWebError {
         self.status_code
     }
 
+    /// for building common error response based on ActixWebError
     fn error_response(&self) -> HttpResponse {
         HttpResponseBuilder::new(self.status_code())
             .insert_header(http::header::ContentType(mime::APPLICATION_JSON))
