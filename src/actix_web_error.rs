@@ -46,6 +46,11 @@ impl actix_web::error::ResponseError for ActixWebError {
     fn error_response(&self) -> HttpResponse {
         HttpResponseBuilder::new(self.status_code())
             .insert_header(http::header::ContentType(mime::APPLICATION_JSON))
-            .body(json!(&self.error_info).to_string())
+            .body(
+                json!({
+                    "error": &self.error_info
+                })
+                .to_string(),
+            )
     }
 }
