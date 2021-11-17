@@ -76,14 +76,6 @@ jobs:
       - name: Run cargo clippy
         run: cargo clippy -- -D warnings
 
-        - uses: actions/checkout@v2
-        name: check-if-skip-release-crate
-        id: skip-release-crate
-        uses: saulmaldonado/skip-workflow@v1
-        with:
-          phrase: '[skip-release]'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
   check-if-skip-crate-releases:
     runs-on: ubuntu-20.04
     outputs:
