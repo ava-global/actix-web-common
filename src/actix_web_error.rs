@@ -2,7 +2,7 @@ use std::fmt::{Debug, Display};
 
 use actix_web::{
     http::{self, StatusCode},
-    HttpResponse, HttpResponseBuilder,
+    HttpResponse, HttpResponseBuilder, ResponseError,
 };
 use serde::Serialize;
 use serde_json::json;
@@ -29,6 +29,10 @@ impl ActixWebError {
             },
             status_code,
         }
+    }
+
+    pub fn to_error(&self) -> actix_web::error::Error {
+        actix_web::error::InternalError::from_response("", self.error_response()).into()
     }
 }
 
