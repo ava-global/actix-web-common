@@ -84,7 +84,23 @@ jobs:
           phrase: '[skip-release]'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-  release-tag:
+  check-if-skip-crate-releases:
+    runs-on: ubuntu-20.04
+    outputs:
+      skip: ${{ steps.check-if-skip.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+            fetch-depth: 1
+
+      - name: check-if-skip-crate-releases
+        id: check-if-skip
+        uses: saulmaldonado/skip-workflow@v1
+        with:
+          phrase: '[skip-release]'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  bump-tag-version:
     needs: [test, audit, lint]
     runs-on: ubuntu-20.04
     outputs:
@@ -108,24 +124,8 @@ jobs:
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
 
-  check-if-skip-crate-releases:
-    runs-on: ubuntu-20.04
-    outputs:
-      skip: ${{ steps.skip-crate-releases.outputs.skip }}
-    steps:
-      - uses: actions/checkout@v2
-        with:
-            fetch-depth: 1
-
-      - name: skip-crate-releases
-        id: skip-crate-releases
-        uses: saulmaldonado/skip-workflow@v1
-        with:
-          phrase: '[skip-release]'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
   crate_io:
-    needs: [test, audit, lint]
+    needs: [test, audit, lint, bump-tag-version]
     if: ${{ !needs.check-if-skip-crate-releases.outputs.skip }}
     runs-on: ubuntu-20.04
     steps:
@@ -145,7 +145,7 @@ jobs:
         run: cargo login ${{ secrets.CARGO_LOGIN_TOKEN }}
 
       - name: bump cargo version
-        run: cargo bump ${{ check-if-skip-crate-releases.outputs.new_version }}
+        run: cargo bump ${{ needs.bump-tag-version.outputs.new_version }}
 
       - name: cargo publish
         run: cargo publish --allow-dirty
