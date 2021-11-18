@@ -18,7 +18,10 @@ jobs:
       - uses: Swatinem/rust-cache@v1
 
       - name: Install grcov
-        run: cargo install grcov
+        run: |
+          wget https://github.com/mozilla/grcov/releases/download/v0.8.2/grcov-linux-x86_64.tar.bz2
+          tar -xf grcov-linux-x86_64.tar.bz2
+          mv grcov $HOME/.cargo/bin
           
       - name: Install llvm-tools
         run: rustup component add llvm-tools-preview

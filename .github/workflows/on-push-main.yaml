@@ -20,7 +20,10 @@ jobs:
       - uses: Swatinem/rust-cache@v1
 
       - name: Install grcov
-        run: cargo install grcov
+        run: |
+          wget https://github.com/mozilla/grcov/releases/download/v0.8.2/grcov-linux-x86_64.tar.bz2
+          tar -xf grcov-linux-x86_64.tar.bz2
+          mv grcov $HOME/.cargo/bin
           
       - name: Install llvm-tools
         run: rustup component add llvm-tools-preview
@@ -73,8 +76,49 @@ jobs:
       - name: Run cargo clippy
         run: cargo clippy -- -D warnings
 
-  crate_io:
+  check-if-skip-crate-releases:
+    runs-on: ubuntu-20.04
+    outputs:
+      skip: ${{ steps.check-if-skip.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+            fetch-depth: 1
+
+      - name: check-if-skip-crate-releases
+        id: check-if-skip
+        uses: saulmaldonado/skip-workflow@v1
+        with:
+          phrase: '[skip-release]'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  bump-tag-version:
     needs: [test, audit, lint]
+    runs-on: ubuntu-20.04
+    outputs:
+      new_tag: ${{ steps.tag_version.outputs.new_tag }}
+      new_version: ${{ steps.tag_version.outputs.new_version }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v5.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
+
+  crate_io:
+    needs: [test, audit, lint, bump-tag-version]
+    if: ${{ !needs.check-if-skip-crate-releases.outputs.skip }}
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -91,15 +135,9 @@ jobs:
 
       - name: cargo login
         run: cargo login ${{ secrets.CARGO_LOGIN_TOKEN }}
-        
-      - name: Bump version and push tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v5.5
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: bump cargo version
-        run: cargo bump ${{ steps.tag_version.outputs.new_version }}
+        run: cargo bump ${{ needs.bump-tag-version.outputs.new_version }}
 
       - name: cargo publish
         run: cargo publish --allow-dirty
