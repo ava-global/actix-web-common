@@ -93,7 +93,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   bump-tag-version:
-    needs: [test, audit, lint]
+    needs: [test, audit, lint, check-if-skip-crate-releases]
     runs-on: ubuntu-20.04
     outputs:
       new_tag: ${{ steps.tag_version.outputs.new_tag }}
@@ -118,7 +118,7 @@ jobs:
           body: ${{ steps.tag_version.outputs.changelog }}
 
   crate_io:
-    needs: [test, audit, lint, bump-tag-version]
+    needs: [test, audit, lint, bump-tag-version, check-if-skip-crate-releases]
     if: ${{ !needs.check-if-skip-crate-releases.outputs.skip }}
     runs-on: ubuntu-20.04
     steps:
