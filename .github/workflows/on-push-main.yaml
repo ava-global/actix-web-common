@@ -79,14 +79,14 @@ jobs:
   check-if-skip-crate-releases:
     runs-on: ubuntu-20.04
     outputs:
-      skip: ${{ steps.check-if-skip.outputs.skip }}
+      skip: ${{ steps.check-if-skip-crate-releases.outputs.skip }}
     steps:
       - uses: actions/checkout@v2
         with:
             fetch-depth: 1
 
       - name: check-if-skip-crate-releases
-        id: check-if-skip
+        id: check-if-skip-crate-releases
         uses: saulmaldonado/skip-workflow@v1
         with:
           phrase: '[skip-release]'
